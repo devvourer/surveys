@@ -5,8 +5,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY')
-
+SECRET_KEY = 'django-insecure-dc-@ffq12lrv#qnwpd^qv7vvn(-rww*35+6z(pz+-gp--p@+l#'
 DEBUG = True
 
 ALLOWED_HOSTS = []
