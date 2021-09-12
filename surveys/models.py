@@ -3,7 +3,7 @@ from django.db import models
 
 class Survey(models.Model):
     name = models.CharField(max_length=255)
-    pub_date = models.DateTimeField()
+    pub_date = models.DateTimeField(null=True)
     end_date = models.DateTimeField()
     description = models.CharField(max_length=255)
 
@@ -27,8 +27,12 @@ class Question(models.Model):
 
 
 class Choice(models.Model):
+    CHOICES = (
+        ('text_area', 'поле для ввода текста'),
+        ('default', 'вариант ответа')
+    )
     question = models.ForeignKey(Question, related_name='choices', on_delete=models.CASCADE)
-    text = models.CharField(max_length=255)
+    text = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return self.text

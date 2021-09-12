@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Survey, Question, Choice, Answer
+from .utils import CurrentUser
 
 
 class BaseSerializer(serializers.Serializer):
@@ -11,7 +12,8 @@ class BaseSerializer(serializers.Serializer):
     def create(self, validated_data):
         try:
             return self.Meta.model.objects.create(**validated_data)
-        except:
+        except Exception as e:
+            print(e)
             raise serializers.ValidationError('"Meta" has not attribute')
 
     def update(self, instance, validated_data):
@@ -22,16 +24,13 @@ class BaseSerializer(serializers.Serializer):
 
 
 class AnswerSerializer(BaseSerializer, serializers.Serializer):
-    def set_default_user(self, serializer_field):
-        self.user_id = serializer_field.context['request'].user.id
-        return self.user_id
     
     id = serializers.IntegerField(read_only=True)
-    user_id = serializers.IntegerField(default=set_default_user())
+    user_id = serializers.IntegerField(default=CurrentUser())
     survey = serializers.SlugRelatedField(queryset=Survey.objects.all(), slug_field='id')
     question = serializers.SlugRelatedField(queryset=Question.objects.all(), slug_field='id')
     choice = serializers.SlugRelatedField(queryset=Choice.objects.all(), slug_field='id', allow_null=True)
-    context_text = serializers.CharField(max_length=255, allow_null=True, required=False)
+    choice_text = serializers.CharField(max_length=255, allow_null=True, required=False)
 
     class Meta:
         model = Answer
@@ -58,11 +57,11 @@ class AnswerSerializer(BaseSerializer, serializers.Serializer):
 class ChoiceSerializer(BaseSerializer, serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     question = serializers.SlugRelatedField(queryset=Question.objects.all(), slug_field='id')
-    choice_text = serializers.CharField(max_length=255)
+    text = serializers.CharField(max_length=255, allow_null=True)
 
     def validate(self, attrs):
         try:
-            choice = Choice.objects.get(question=attrs['question'].id, choice_text=attrs['choice_text'])
+            choice = Choice.objects.get(question=attrs['question'].id, text=attrs['text'])
             if choice:
                 raise serializers.ValidationError('Choice already exist')
         except Choice.DoesNotExist:
@@ -72,7 +71,7 @@ class ChoiceSerializer(BaseSerializer, serializers.Serializer):
         model = Choice
         fields = '__all__'
 
-
+           
 class QuestionSerializer(BaseSerializer, serializers.Serializer):
     CHOICES = (
         ('text_answer', 'ответ текстом'),
@@ -93,8 +92,12 @@ class QuestionSerializer(BaseSerializer, serializers.Serializer):
 
 class SurveySerializer(BaseSerializer, serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    survey_name = serializers.CharField(max_length=255)
-    pub_date = serializers.DateTimeField()
+    name = serializers.CharField(max_length=255)
+    pub_date = serializers.DateTimeField(allow_null=True)
     end_date = serializers.DateTimeField()
     description = serializers.CharField(max_length=255)
     questions = QuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Survey
+        fields = '__all__'
