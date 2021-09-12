@@ -1,6 +1,8 @@
 from pathlib import Path
 from decouple import config
 
+import os
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
@@ -19,6 +21,7 @@ INSTALLED_APPS = [
     # apps
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_yasg',
     'surveys',
 ]
 
@@ -82,8 +85,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
+
 
 LANGUAGE_CODE = 'en-us'
 
